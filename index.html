@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamVideo - Plataforma de Streaming</title>
+    <link rel="stylesheet" href="diseno.css">
+</head>
+<body>
+    <!-- PÁGINA DE INICIO -->
+    <div id="homePage">
+        <nav class="navbar">
+            <div class="logo">🎬 StreamVideo</div>
+            <div style="font-size: 0.9em; color: #aaa;">Tu plataforma de streaming personal</div>
+        </nav>
+
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Bienvenido a StreamVideo</h1>
+                <p>Disfruta de miles de Videos en alta definición</p>
+                <button class="hero-btn" onclick="scrollToMovies()">Explorar contenido</button>
+            </div>
+        </div>
+
+        <div class="movies-grid">
+            <h2>🎥 Contenido Disponibles</h2>
+            <div class="grid" id="movieGrid"></div>
+        </div>
+    </div>
+
+    <!-- PÁGINA DE REPRODUCCIÓN -->
+    <div id="playerPage">
+        <div class="player-header">
+            <button class="back-btn" onclick="goHome()">← Volver al inicio</button>
+            <div class="player-title" id="playerMovieTitle"></div>
+            <div></div>
+        </div>
+
+        <div class="player-container">
+            <div class="player-section">
+                <div class="video-container">
+                    <video id="videoPlayer"></video>
+                </div>
+                <div class="controls-bar">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                    </div>
+                    <div class="controls">
+                        <div class="btn-group">
+                            <button id="rewindBtn">⏪ -10s</button>
+                            <button id="playBtn">▶ Reproducir</button>
+                            <button id="pauseBtn">⏸ Pausa</button>
+                            <button id="forwardBtn">⏩ +10s</button>
+                        </div>
+                        <div class="volume-control">
+                            <span>🔊</span>
+                            <input type="range" id="volumeSlider" min="0" max="100" value="100">
+                        </div>
+                        <button id="fullscreenBtn">⛶ Pantalla Completa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de películas
+        const moviesDb = [
+            {
+                id: 1,
+                name: 'JOJI - PIXEALATED KISSES',
+                url: 'videos/Joji - PIXELATED KISSES (Visualizer).mp4',
+                poster: 'imagenes/Joji.jpeg',
+                genre: 'R&B',
+                year: 2025,
+                rating: 9.5,
+                description: 'Joji es un cantante, compositor y productor japonés-australiano conocido por su estilo melancólico y experimental que mezcla R&B, lo-fi, pop alternativo y electrónica. Su nombre real es George Kusunoki Miller, y antes de dedicarse a la música era famoso en YouTube por sus personajes humorísticos como Filthy Frank y Pink Guy. Más tarde, dejó esa etapa para enfocarse en su carrera musical, ganando reconocimiento con canciones como "Slow Dancing in the Dark", "Glimpse of Us" y "Sanctuary", caracterizadas por letras emocionales, producción atmosférica y una voz suave y expresiva.'
+            },
+            {
+                id: 2,
+                name: 'The Marías - Sienna',
+                url: 'videos/The Marías - Sienna (Español + Lyrics).mp4',
+                poster: 'imagenes/marias.jpeg',
+                genre: 'Indie',
+                year: 2024,
+                rating: 8.5,
+                description: 'The Marías es una banda de indie pop originaria de Los Ángeles, liderada por la cantante María Zardoya y el baterista y productor Josh Conway. Su estilo se distingue por una fusión suave y sensual de pop psicodélico, R&B, jazz y música latina, con letras tanto en inglés como en español. La voz etérea de María, combinada con arreglos elegantes y una estética visual retro, ha convertido al grupo en uno de los más distintivos de la escena alternativa actual. Son conocidos por temas como "Cariño", "Hush" y "I Don\'t Know You."'
+            },
+            {
+                id: 3,
+                name: 'Sabrina Carpenter - Expresso',
+                url: 'videos/sabrina.mp4',
+                poster: 'imagenes/sabrina.jpeg',
+                genre: 'Pop',
+                year: 2024,
+                rating: 9.0,
+                description: 'Sabrina Carpenter es una cantante, compositora y actriz estadounidense conocida por su estilo pop moderno y su personalidad carismática. Comenzó su carrera en Disney Channel con la serie Girl Meets World, pero pronto se consolidó como artista musical con su potente voz y letras sinceras. Su música combina pop, dance y R&B, destacando por su sonido pegajoso y su toque elegante. Ha lanzado éxitos como "Nonsense", "Feather" y "Espresso", que reflejan su evolución hacia un estilo más maduro y seguro.'
+            },
+            {
+                id: 4,
+                name: 'Lana del Rey - Young And Beautiful',
+                url: 'videos/Lana Del Rey - Young and Beautiful.mp4',
+                poster: 'imagenes/lanadelrey.jpeg',
+                genre: 'Indie',
+                year: 2013,
+                rating: 8.7,
+                description: 'Lana Del Rey es una cantante, compositora y productora estadounidense reconocida por su estilo melancólico y cinematográfico. Su música combina pop alternativo, indie y rock con influencias vintage, evocando la cultura estadounidense de los años 50 y 60. Las letras de Lana suelen abordar temas como el amor, la tristeza, la fama y la nostalgia, con una voz suave y envolvente que se ha vuelto su sello distintivo. Alcanzó fama mundial con canciones como "Video Games", "Summertime Sadness" y "Born to Die", consolidándose como una de las artistas más influyentes de su generación.'
+            },
+            {
+                id: 5,
+                name: 'XG - GALA',
+                url: 'videos/xg-gala.mp4',
+                poster: 'imagenes/XG.jpeg',
+                genre: 'HIP HOP, R&B, POP',
+                year: 2025,
+                rating: 9.3,
+                description: 'XG es un grupo femenino de origen japonés formado por XGALX, conocido por su estilo futurista y su fusión de pop, R&B y hip-hop. Debutaron en 2022 y rápidamente llamaron la atención internacional por su talento vocal, coreografías precisas y una fuerte presencia escénica. Las integrantes destacan por su versatilidad y actitud empoderada. Sus canciones, como "Tippy Toes", "Shooting Star" y "Left Right", combinan letras en inglés con producción moderna y estética urbana, representando una nueva ola global de pop asiático.'
+            }
+        ];
+
+        let currentMovieId = null;
+        const video = document.getElementById('videoPlayer');
+
+        // Formatear tiempo
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Cargar grid de películas
+        function loadMoviesGrid() {
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = '';
+            moviesDb.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.onclick = () => playMovie(movie.id);
+                card.innerHTML = `
+                    <div class="movie-poster">
+                        <img src="${movie.poster}" alt="${movie.name}">
+                        <div class="play-icon">▶</div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.name}</div>
+                        <div class="movie-description">${movie.description}</div>
+                        <div class="movie-meta">
+                            <span>${movie.genre}</span>
+                            <span>${movie.year}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Reproducir película
+        function playMovie(movieId) {
+            const movie = moviesDb.find(m => m.id === movieId);
+            if (!movie) return;
+
+            currentMovieId = movieId;
+            video.src = movie.url;
+
+            // Cargar progreso guardado
+            const saved = JSON.parse(localStorage.getItem(`movie_${movieId}`) || '{"progress": 0, "currentTime": 0}');
+            video.currentTime = saved.currentTime || 0;
+
+            // Actualizar detalles
+            document.getElementById('playerMovieTitle').textContent = movie.name;
+
+            // Cambiar a página de reproducción
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('playerPage').style.display = 'flex';
+
+            video.play();
+            document.getElementById('playBtn').textContent = '⏸ Pausar';
+        }
+
+        // Volver al inicio
+        function goHome() {
+            video.pause();
+            document.getElementById('homePage').style.display = 'flex';
+            document.getElementById('playerPage').style.display = 'none';
+            currentMovieId = null;
+        }
+
+        // Scroll a películas
+        function scrollToMovies() {
+            document.querySelector('.movies-grid').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Controles de reproducción
+        document.getElementById('playBtn').addEventListener('click', function() {
+            if (video.paused) {
+                video.play();
+                this.textContent = '⏸ Pausar';
+            } else {
+                video.pause();
+                this.textContent = '▶ Reproducir';
+            }
+        });
+
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            video.pause();
+            document.getElementById('playBtn').textContent = '▶ Reproducir';
+        });
+
+        document.getElementById('rewindBtn').addEventListener('click', () => {
+            video.currentTime = Math.max(0, video.currentTime - 10);
+        });
+
+        document.getElementById('forwardBtn').addEventListener('click', () => {
+            video.currentTime = Math.min(video.duration, video.currentTime + 10);
+        });
+
+        // Volumen
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            video.volume = e.target.value / 100;
+        });
+
+        // Pantalla completa
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            const videoContainer = document.querySelector('.video-container');
+            if (!document.fullscreenElement) {
+                videoContainer.requestFullscreen().catch(err => {
+                    alert(`Error al activar pantalla completa: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Barra de progreso
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+
+        video.addEventListener('timeupdate', () => {
+            const progress = (video.currentTime / video.duration) * 100 || 0;
+            progressFill.style.width = progress + '%';
+            document.getElementById('currentTime').textContent = formatTime(video.currentTime);
+
+            if (currentMovieId) {
+                const movieData = {
+                    progress: progress,
+                    currentTime: video.currentTime
+                };
+                localStorage.setItem(`movie_${currentMovieId}`, JSON.stringify(movieData));
+            }
+        });
+
+        video.addEventListener('loadedmetadata', () => {
+            const duration = formatTime(video.duration);
+            document.getElementById('duration').textContent = duration;
+        });
+
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            video.currentTime = percent * video.duration;
+        });
+
+        video.addEventListener('play', () => {
+            document.getElementById('playBtn').textContent = '⏸ Pausar';
+        });
+
+        video.addEventListener('pause', () => {
+            document.getElementById('playBtn').textContent = '▶ Reproducir';
+        });
+
+        // Inicializar
+        loadMoviesGrid();
+    </script>
+</body>
+</html>
